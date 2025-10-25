@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class Mob : MonoBehaviour
 {
-    [SerializeField] private float _speed = 2;
-    [SerializeField] private Vector3 _direction;
+    [SerializeField] private float _speed = 5f;
 
     private float _lifetimeMin = 50;
     private float _lifetimeMax = 100;
 
+    private Vector3 _direction;
     private Rigidbody _rigidbody;
 
     public Rigidbody Rigidbody => _rigidbody;
@@ -23,7 +23,7 @@ public class Mob : MonoBehaviour
 
     public void Init(Vector3 direction, float lifetimeMIn, float lifetimeMax)
     {
-        _direction = direction.normalized;
+        _direction = direction;
 
         _lifetimeMin = lifetimeMIn;
         _lifetimeMax = lifetimeMax;
@@ -31,12 +31,10 @@ public class Mob : MonoBehaviour
         StartCoroutine(StartTimerToDestroy());
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        transform.position += _direction * _speed * Time.deltaTime;
-
-        Quaternion targetRotation = Quaternion.LookRotation(_direction);
-        transform.rotation = targetRotation;
+        Vector3 targetVelocity = _direction * _speed;
+        _rigidbody.velocity = new Vector3(targetVelocity.x, _rigidbody.velocity.y, targetVelocity.z);
     }
 
     private IEnumerator StartTimerToDestroy()
