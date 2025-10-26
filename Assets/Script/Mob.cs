@@ -1,46 +1,53 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class Mob : MonoBehaviour
 {
     [SerializeField] private float _speed = 5f;
 
-    private float _lifetimeMin = 50;
-    private float _lifetimeMax = 100;
-
-    private Vector3 _direction;
     private Rigidbody _rigidbody;
+    private Mob _prefab;
+    private TargetPoint _currentTarget;
 
     public Rigidbody Rigidbody => _rigidbody;
+    public Mob Prefab => _prefab;
 
-    public event Action<Mob> ActionLifetimeOut;
+    public event Action<Mob> ActionTargetPointReached;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void Init(Vector3 direction, float lifetimeMIn, float lifetimeMax)
+    public void Init(Vector3 spawnPosition, TargetPoint targetPoint, Mob prefab)
     {
-        _direction = direction;
-
-        _lifetimeMin = lifetimeMIn;
-        _lifetimeMax = lifetimeMax;
-
-        StartCoroutine(StartTimerToDestroy());
+        transform.position = spawnPosition;
+        _currentTarget = targetPoint;
+        _prefab = prefab;
     }
 
     private void FixedUpdate()
     {
-        Vector3 targetVelocity = _direction * _speed;
+        if (_currentTarget == null)
+        {
+            Debug.LogError("Current Target is null!");
+            return;
+        }
+
+        Vector3 direction = (_currentTarget.Position - transform.position).normalized;
+
+        Vector3 targetVelocity = direction * _speed;
         _rigidbody.velocity = new Vector3(targetVelocity.x, _rigidbody.velocity.y, targetVelocity.z);
     }
 
-    private IEnumerator StartTimerToDestroy()
+    private void OnCollisionEnter(Collision collision)
     {
-        yield return new WaitForSeconds(DevUtils.GetRandomNumber(_lifetimeMin, _lifetimeMax + 1f));
-
-        ActionLifetimeOut?.Invoke(this);
+        if (collision.gameObject.TryGetComponent<TargetPoint>(out TargetPoint collidedTarget))
+        {
+            if (collidedTarget == _currentTarget)
+            {
+                ActionTargetPointReached?.Invoke(this);
+            }
+        }
     }
 }

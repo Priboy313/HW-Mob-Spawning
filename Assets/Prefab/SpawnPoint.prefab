@@ -116,7 +116,7 @@ GameObject:
   - component: {fileID: 8272606056904933201}
   - component: {fileID: 1936226806154568030}
   m_Layer: 0
-  m_Name: Spawner
+  m_Name: SpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -151,7 +151,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f85b8b31cb6f9a409d4325d6ecd96d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _spawnDelay: 2
+  _prefabMob: {fileID: 0}
   _spawnPoint: {fileID: 1314029123044919071}
+  _waypoints: []
 --- !u!1 &2713137172374410873
 GameObject:
   m_ObjectHideFlags: 0
