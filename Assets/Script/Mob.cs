@@ -5,22 +5,24 @@ public class Mob : MonoBehaviour
 {
     [SerializeField] private float _speed = 5f;
 
-    private Rigidbody _rigidbody;
-    private TargetPoint _currentTarget;
+    private Target _currentTarget;
 
-    public Rigidbody Rigidbody => _rigidbody;
+    public Rigidbody Rigidbody { get; private set; }
 
     public event Action<Mob> ActionReadyForRelease;
 
     private void Awake()
     {
-        _rigidbody = GetComponent<Rigidbody>();
+        Rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void Init(Vector3 spawnPosition, TargetPoint targetPoint)
+    public void Init(SpawnPoint spawnPoint)
     {
-        transform.position = spawnPosition;
-        _currentTarget = targetPoint;
+        transform.position = spawnPoint.SpawnPosition;
+        _currentTarget = spawnPoint.Target;
+        Rigidbody.velocity = Vector3.zero;
+        Rigidbody.angularVelocity = Vector3.zero;
+        transform.rotation = Quaternion.identity;
     }
 
     private void FixedUpdate()
@@ -34,12 +36,12 @@ public class Mob : MonoBehaviour
         Vector3 direction = (_currentTarget.Position - transform.position).normalized;
 
         Vector3 targetVelocity = direction * _speed;
-        _rigidbody.velocity = new Vector3(targetVelocity.x, _rigidbody.velocity.y, targetVelocity.z);
+        Rigidbody.velocity = new Vector3(targetVelocity.x, Rigidbody.velocity.y, targetVelocity.z);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.TryGetComponent<TargetPoint>(out TargetPoint collidedTarget))
+        if (collision.gameObject.TryGetComponent<Target>(out Target collidedTarget))
         {
             if (collidedTarget == _currentTarget)
             {

@@ -2,24 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MobPoolsHandler))]
 public class SpawnHandler : MonoBehaviour
 {
     [Header("Spawning")]
     [SerializeField] private List<Spawner> _spawners = new();
     [SerializeField, Min(0.1f)] private float _spawnDelay = 2f;
-
-    private MobPoolsHandler _mobPoolsHandler;
-
-    private void Awake()
-    {
-        _mobPoolsHandler = GetComponent<MobPoolsHandler>();
-
-        foreach (Spawner spawner in _spawners)
-        {
-            spawner.Init(_mobPoolsHandler);
-        }
-    }
 
     private void Start()
     {

@@ -1,17 +1,16 @@
-using System.Collections;
 using UnityEngine;
 
 public class SpawnPoint : MonoBehaviour
 {
     [SerializeField] private Transform _spawnPosition;
-    [SerializeField] private TargetPoint _targetPoint;
+    [SerializeField] private Target _target;
 
     public Vector3 SpawnPosition => _spawnPosition.position;
-    public TargetPoint TargetPoint => _targetPoint;
+    public Target Target => _target;
 
     private void Start()
     {
-        if (_targetPoint == null)
+        if (_target == null)
         {
             Debug.LogError("Target is not set!");
             return;

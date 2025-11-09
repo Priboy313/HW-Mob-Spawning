@@ -1,46 +1,68 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] List<SpawnPoint> _spawnPoints = new();
+    [Header("Spawning")]
+    [SerializeField] private List<SpawnPoint> _spawnPoints = new();
     [SerializeField] private Mob _prefabMob;
 
-    private MobPoolsHandler _mobPoolsHandler;
-    
-    private void Start()
+    [Header("Pool")]
+    [SerializeField] private int _poolCapacity = 20;
+    [SerializeField] private int _poolMaxSize = 100;
+
+    private ObjectPool<Mob> _mobPool;
+
+    private void OnValidate()
+    {
+        if (_poolMaxSize < _poolCapacity)
+        {
+            _poolMaxSize = _poolCapacity;
+        }
+    }
+
+    private void Awake()
     {
         if (_prefabMob == null)
         {
             Debug.LogError("Prefab is not set!");
-            this.enabled = false;
+            enabled = false;
         }
-    }
 
-    public void Init(MobPoolsHandler mobPoolsHandler)
-    {
-        _mobPoolsHandler = mobPoolsHandler;
+        _mobPool = new ObjectPool<Mob>(
+            createFunc: () => CreatePooledObject(_prefabMob),
+            actionOnGet: (mob) => mob.gameObject.SetActive(true),
+            actionOnRelease: (mob) => mob.gameObject.SetActive(false),
+            actionOnDestroy: (mob) => OnDestroyFromPool(mob),
+            collectionCheck: true,
+            defaultCapacity: _poolCapacity,
+            maxSize: _poolMaxSize
+        );
     }
 
     public void SpawnMob()
     {
-        if (_mobPoolsHandler == null)
-        {
-            Debug.LogError("MobPoolsHandler not set!");
-            return;
-        }
-
         SpawnPoint spawnPoint = _spawnPoints[DevUtils.GetRandomNumber(_spawnPoints.Count)];
-        Mob mob = _mobPoolsHandler.GetMob(_prefabMob);
-        ResetMob(mob, spawnPoint);
+        Mob mob = _mobPool.Get();
+        mob.Init(spawnPoint);
     }
 
-    private void ResetMob(Mob mob, SpawnPoint spawnPoint)
+    private Mob CreatePooledObject(Mob prefab)
     {
-        mob.Init(spawnPoint.SpawnPosition, spawnPoint.TargetPoint);
-        mob.Rigidbody.velocity = Vector3.zero;
-        mob.Rigidbody.angularVelocity = Vector3.zero;
-        mob.transform.rotation = Quaternion.Euler(Vector3.zero);
+        Mob mob = Instantiate(prefab);
+        mob.ActionReadyForRelease += OnReadyForRelease;
+        return mob;
+    }
+
+    private void OnReadyForRelease(Mob mob)
+    {
+        _mobPool.Release(mob);
+    }
+
+    private void OnDestroyFromPool(Mob mobInstance)
+    {
+        mobInstance.ActionReadyForRelease -= OnReadyForRelease;
+        Destroy(mobInstance.gameObject);
     }
 }
