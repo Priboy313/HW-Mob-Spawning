@@ -6,24 +6,21 @@ public class Mob : MonoBehaviour
     [SerializeField] private float _speed = 5f;
 
     private Rigidbody _rigidbody;
-    private Mob _prefab;
     private TargetPoint _currentTarget;
 
     public Rigidbody Rigidbody => _rigidbody;
-    public Mob Prefab => _prefab;
 
-    public event Action<Mob> ActionTargetPointReached;
+    public event Action<Mob> ActionReadyForRelease;
 
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void Init(Vector3 spawnPosition, TargetPoint targetPoint, Mob prefab)
+    public void Init(Vector3 spawnPosition, TargetPoint targetPoint)
     {
         transform.position = spawnPosition;
         _currentTarget = targetPoint;
-        _prefab = prefab;
     }
 
     private void FixedUpdate()
@@ -46,7 +43,7 @@ public class Mob : MonoBehaviour
         {
             if (collidedTarget == _currentTarget)
             {
-                ActionTargetPointReached?.Invoke(this);
+                ActionReadyForRelease?.Invoke(this);
             }
         }
     }

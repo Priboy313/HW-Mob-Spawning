@@ -8,27 +8,14 @@ public class MobPoolsHandler : MonoBehaviour
     [SerializeField] private int _mobPoolCapacity = 20;
     [SerializeField] private int _mobPoolMaxSize = 100;
 
-    public static MobPoolsHandler Instance;
-
     private Dictionary<Mob, ObjectPool<Mob>> _mobPools = new();
+    private Dictionary<Mob, Mob> _instanceToPrefabMap = new();
 
     private void OnValidate()
     {
         if (_mobPoolMaxSize < _mobPoolCapacity)
         {
             _mobPoolMaxSize = _mobPoolCapacity;
-        }
-    }
-
-    private void Awake()
-    {
-        if (Instance)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            Instance = this;
         }
     }
 
@@ -39,7 +26,10 @@ public class MobPoolsHandler : MonoBehaviour
             CreatePool(prefab);
         }
 
-        return _mobPools[prefab].Get();
+        Mob mobInstance = _mobPools[prefab].Get();
+        _instanceToPrefabMap[mobInstance] = prefab;
+
+        return mobInstance;
     }
 
     private void CreatePool(Mob prefab)
@@ -60,18 +50,22 @@ public class MobPoolsHandler : MonoBehaviour
     private Mob CreatePooledObject(Mob prefab)
     {
         Mob mob = Instantiate(prefab);
-        mob.ActionTargetPointReached += OnMobReachedTarget;
+        mob.ActionReadyForRelease += OnMobReadyForRelease;
         return mob;
     }
 
-    private void OnMobReachedTarget(Mob mob)
+    private void OnMobReadyForRelease(Mob mobInstance)
     {
-        _mobPools[mob.Prefab].Release(mob);
+        if (_instanceToPrefabMap.TryGetValue(mobInstance, out Mob prefab))
+        {
+            _mobPools[prefab].Release(mobInstance);
+        }
     }
 
-    private void OnDestroyFromPool(Mob mob)
+    private void OnDestroyFromPool(Mob mobInstance)
     {
-        mob.ActionTargetPointReached -= OnMobReachedTarget;
-        Destroy(mob.gameObject);
+        mobInstance.ActionReadyForRelease -= OnMobReadyForRelease;
+        _instanceToPrefabMap.Remove(mobInstance);
+        Destroy(mobInstance.gameObject);
     }
 }

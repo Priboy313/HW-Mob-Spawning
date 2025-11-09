@@ -152,9 +152,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _spawnDelay: 2
-  _prefabMob: {fileID: 0}
-  _spawnPoint: {fileID: 1314029123044919071}
-  _waypoints: []
+  _prefabMob: {fileID: 5469137042924536027, guid: 911a6574afb33e547952ac5dfcbc5ae4, type: 3}
+  _spawnPosition: {fileID: 1314029123044919071}
+  _targetPoint: {fileID: 0}
 --- !u!1 &2713137172374410873
 GameObject:
   m_ObjectHideFlags: 0
